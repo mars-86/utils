@@ -15,58 +15,68 @@ struct _list {
 	void *next;
 };
 
-#define get_format(type) \
-    (!strcmp(#type, "char *") ? "%s\n" : \
-    !strcmp(#type, "int *") ? "%d\n" : "%d\n")
+#define create_node(_node_base_type, _node_dest, _val, _node_prev) \
+( \
+     _node_dest = (_node_base_type *)malloc(sizeof(_node_base_type)), \
+    (_node_dest)->d = _val, \
+    (_node_dest)->prev = _node_prev, \
+    (_node_dest)->next = NULL \
+)
 
-#define new_list(name, type)																	\
-	struct _##name##node {																		\
-		type d;																					\
-		struct _##name##node *prev;																\
-		struct _##name##node *next;																\
-	};																							\
-	void name##_insert(const void (*n))													\
-	{																							\
-		struct _##name##node *_##name##node_temp;												\
-		_##name##node_temp = (struct _##name##node*)malloc(sizeof(struct _##name##node));		\
-		if ((name)->next == NULL) {															\
-			_##name##node_temp->d = (type)n;													\
-			_##name##node_temp->prev = NULL;													\
-			_##name##node_temp->next = NULL;													\
-			name->curr_ptr = name->next = (struct _##name##node *)_##name##node_temp;		\
-			struct _##name##node *_##name##node_print = (struct _##name##node *)(name)->curr_ptr; \
-			printf(get_format(type), &(*_##name##node_print->d));		\
-			return;																				\
-		}															\
-		_##name##node_temp->d = (type)n;													\
-		_##name##node_temp->prev = (name)->curr_ptr;													\
-		_##name##node_temp->next = NULL;													\
-		name->curr_ptr = name->next = (struct _##name##node *)_##name##node_temp;		\
-		struct _##name##node *_##name##node_print = (struct _##name##node *)name->curr_ptr; \
-		printf(get_format(type), &(*_##name##node_print->d));		\
-	}																							\
-	void *name##_remove_last(void)															\
-	{																							\
-		struct _##name##node *_##name##node_temp;												\
-		_##name##node_temp = name->curr_ptr;													\
-		name->curr_ptr = _##name##node_temp->prev;											\
-		free(_##name##node_temp);																\
-		return NULL;																			\
+#define get_format(_type) \
+( \
+    !strcmp(#_type, "char *") ? "%s\n" : \
+    !strcmp(#_type, "int *") ? "%d\n" : "%d\n" \
+)
+
+#define new_list(name, type) \
+	struct _##name##node { \
+		type d;	\
+		struct _##name##node *prev;	\
+		struct _##name##node *next;	\
+	}; \
+	void name##_insert(const void *n) \
+	{ \
+		struct _##name##node *_##name##node_temp, *_##name##node_last; \
+		if ((name)->next == NULL) {	\
+			create_node(struct _##name##node, _##name##node_temp, ((type)n), NULL); \
+            name->begin_ptr = name->curr_ptr = name->end_ptr = name->next = (struct _##name##node *)_##name##node_temp; \
+			return; \
+		} \
+		_##name##node_last = (struct _##name##node *)name->end_ptr; \
+		create_node(struct _##name##node, _##name##node_temp, ((type)n), _##name##node_last); \
+		name->end_ptr = _##name##node_last->next = (struct _##name##node *)_##name##node_temp; \
+	} \
+	void *name##_remove_last(void) \
+	{ \
+        if(name->end_ptr == NULL) return NULL; \
+		struct _##name##node *_##name##node_temp, *_##name##node_last; \
+		_##name##node_temp = (struct _##name##node *)name->end_ptr; \
+		if(_##name##node_temp->prev != NULL) \
+            name->end_ptr = _##name##node_temp->prev; \
+        else \
+            name->begin_ptr = name->curr_ptr = NULL; \
+		_##name##node_last = (struct _##name##node *)name->end_ptr; \
+		_##name##node_last->next = NULL; \
+		free(_##name##node_temp); \
+		return NULL; \
 	} \
 	void name##_traverse(void) \
 	{ \
         struct _##name##node *_##name##node_temp; \
-        for (_##name##node_temp = (struct _##name##node *)name->begin_ptr; _##name##node_temp != NULL; _##name##node_temp =_##name##node_temp->next) \
-            printf(get_format(type), &(*_##name##node_temp->d)); \
+        const char *fmt = get_format(type); \
+        for (_##name##node_temp = (struct _##name##node *)name->begin_ptr; _##name##node_temp != NULL; _##name##node_temp =_##name##node_temp->next) { \
+            printf(fmt, (int)&(*_##name##node_temp->d)); \
+        } \
 	} \
-    void name##_create_list(list_t **list) {													\
-		*list = (list_t *)malloc(sizeof(list_t));												\
-		(*list)->begin_ptr = (*list)->curr_ptr = NULL;											\
-		(*list)->insert = &name##_insert;														\
-		(*list)->remove_last = &name##_remove_last;														\
-		(*list)->traverse = &name##_traverse;	\
-		(*list)->next = NULL;																	\
-	}																							\
+    void name##_create_list(list_t **list) { \
+		*list = (list_t *)malloc(sizeof(list_t)); \
+		(*list)->begin_ptr = (*list)->curr_ptr = (*list)->end_ptr = NULL; \
+		(*list)->insert = &name##_insert; \
+		(*list)->remove_last = &name##_remove_last;	\
+		(*list)->traverse = &name##_traverse; \
+		(*list)->next = NULL; \
+	} \
 	name##_create_list(&name);
 
 void delete_list(list_t **list)
