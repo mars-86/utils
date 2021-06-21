@@ -3,12 +3,15 @@
 
 #include "stack_internal.h"
 
-#define new_list(name, type) _new_list_internal(name, type)
+#define new_stack(name, type) _new_stack_internal(name, type)
 
 struct _stack {
 	void *base_ptr, *top_ptr;
 	void (*push)(const void *val);
+	void (*traverse)(void);
+	int (*length)(void);
 	void *(*pop)(void);
+	void (*pop_all)(void);
 	void *next;
 };
 

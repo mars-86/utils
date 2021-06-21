@@ -25,78 +25,74 @@
     !strcmp(#_type, "long *") ? "%ld\n" : "%d\n" \
 )
 
-#define _new_list_internal(name, type) \
+#define _new_stack_internal(name, type) \
 	struct _##name##node { \
 		type d;	\
 		struct _##name##node *prev;	\
 		struct _##name##node *next;	\
 	}; \
-	void name##_insert(const void *n) \
+	void name##_push(const void *n) \
 	{ \
 		struct _##name##node *_##name##node_temp, *_##name##node_last; \
 		if ((name)->next == NULL) {	\
 			_create_node_internal(struct _##name##node, _##name##node_temp, ((type)n), NULL); \
-            name->begin_ptr = name->curr_ptr = name->end_ptr = name->next = (struct _##name##node *)_##name##node_temp; \
+            name->base_ptr = name->top_ptr = name->next = (struct _##name##node *)_##name##node_temp; \
 			return; \
 		} \
-		_##name##node_last = (struct _##name##node *)name->end_ptr; \
+		_##name##node_last = (struct _##name##node *)name->top_ptr; \
 		_create_node_internal(struct _##name##node, _##name##node_temp, ((type)n), _##name##node_last); \
-		name->end_ptr = _##name##node_last->next = (struct _##name##node *)_##name##node_temp; \
+		name->top_ptr = _##name##node_last->next = (struct _##name##node *)_##name##node_temp; \
 	} \
 	void name##_traverse(void) \
 	{ \
         struct _##name##node *_##name##node_temp; \
         const char *fmt = _get_format_internal(type); \
-        for (_##name##node_temp = (struct _##name##node *)name->begin_ptr; _##name##node_temp != NULL; _##name##node_temp =_##name##node_temp->next) { \
+        for (_##name##node_temp = (struct _##name##node *)name->base_ptr; _##name##node_temp != NULL; _##name##node_temp =_##name##node_temp->next) { \
             printf(fmt, (int)&(*_##name##node_temp->d)); \
         } \
 	} \
 	int name##_length(void) \
 	{ \
-        struct _##name##node *_##name##node_temp = (struct _##name##node *)name->begin_ptr; \
+        struct _##name##node *_##name##node_temp = (struct _##name##node *)name->base_ptr; \
         int i = 0; \
         while (_##name##node_temp != NULL) \
             ++i, _##name##node_temp =_##name##node_temp->next; \
         return i; \
 	} \
-	void name##_remove(const void *node) \
+	void *name##_pop(void) \
 	{ \
-	} \
-	void *name##_remove_last(void) \
-	{ \
-        if(name->end_ptr == NULL) return NULL; \
+        if(name->top_ptr == NULL) return NULL; \
 		struct _##name##node *_##name##node_temp, *_##name##node_last; \
-		_##name##node_temp = (struct _##name##node *)name->end_ptr; \
+		_##name##node_temp = (struct _##name##node *)name->top_ptr; \
 		if(_##name##node_temp->prev != NULL) { \
-            name->end_ptr = _##name##node_last = _##name##node_temp->prev; \
+            name->top_ptr = _##name##node_last = _##name##node_temp->prev; \
             _##name##node_last->next = NULL; \
 		} \
         else \
-            name->begin_ptr = name->curr_ptr = name->end_ptr = name->next = NULL; \
+            name->base_ptr = name->top_ptr = name->next = NULL; \
 		_delete_node_internal(_##name##node_temp); \
 		return NULL; \
 	} \
-	void name##_remove_all(void) \
+	void name##_pop_all(void) \
 	{ \
-        if(name->end_ptr == NULL) return; \
-        struct _##name##node *_##name##node_temp = (struct _##name##node *)name->end_ptr; \
+        if(name->top_ptr == NULL) return; \
+        struct _##name##node *_##name##node_temp = (struct _##name##node *)name->top_ptr; \
         while(_##name##node_temp != NULL) { \
-            name->end_ptr = _##name##node_temp->prev; \
+            name->top_ptr = _##name##node_temp->prev; \
             _delete_node_internal(_##name##node_temp); \
-            _##name##node_temp = (struct _##name##node *)name->end_ptr; \
+            _##name##node_temp = (struct _##name##node *)name->top_ptr; \
         } \
-        name->begin_ptr = name->curr_ptr = name->end_ptr = name->next = NULL; \
+        name->base_ptr = name->top_ptr = name->next = NULL; \
 	} \
-    void name##_create_list(list_t **list) { \
-		*list = (list_t *)malloc(sizeof(list_t)); \
-		(*list)->begin_ptr = (*list)->curr_ptr = (*list)->end_ptr = (*list)->next = NULL; \
-		(*list)->insert = &name##_insert; \
-		(*list)->traverse = &name##_traverse; \
-		(*list)->length = &name##_length; \
-		(*list)->remove = &name##_remove; \
-		(*list)->remove_last = &name##_remove_last;	\
-		(*list)->remove_all = &name##_remove_all; \
+    void name##_create_stack(stack_t **stack) { \
+		*stack = (stack_t *)malloc(sizeof(stack_t)); \
+		(*stack)->base_ptr = (*stack)->top_ptr = (*stack)->next = NULL; \
+		(*stack)->push = &name##_push; \
+		(*stack)->traverse = &name##_traverse; \
+		(*stack)->length = &name##_length; \
+		(*stack)->pop = &name##_pop; \
+		(*stack)->pop_all = &name##_pop_all; \
 	} \
-	name##_create_list(&name);
+	name##_create_stack(&name);
 
 #endif // _TEMPLATE_STACK_INTERNAL_INCLUDED_H_
