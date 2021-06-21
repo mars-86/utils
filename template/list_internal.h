@@ -12,36 +12,28 @@
 		struct _##name##node *prev;	\
 		struct _##name##node *next;	\
 	}; \
-	void name##_insert(const void *n) \
+	void name##_insert(const void *val) \
 	{ \
 		struct _##name##node *_##name##node_temp, *_##name##node_last; \
-		if ((name)->next == NULL) {	\
-			_create_node_internal(struct _##name##node, _##name##node_temp, ((type)n), NULL); \
-            name->begin_ptr = name->curr_ptr = name->end_ptr = name->next = (struct _##name##node *)_##name##node_temp; \
+		if ((name)->start == NULL) {	\
+			_create_node_internal(struct _##name##node, _##name##node_temp, ((type)val), NULL); \
+            name->start = name->curr_ptr = name->end_ptr = (struct _##name##node *)_##name##node_temp; \
 			return; \
 		} \
 		_##name##node_last = (struct _##name##node *)name->end_ptr; \
-		_create_node_internal(struct _##name##node, _##name##node_temp, ((type)n), _##name##node_last); \
+		_create_node_internal(struct _##name##node, _##name##node_temp, ((type)val), _##name##node_last); \
 		name->end_ptr = _##name##node_last->next = (struct _##name##node *)_##name##node_temp; \
 	} \
 	void name##_for_each(void (*callback)(const void *elem, int index, list_t **list)) \
 	{ \
         struct _##name##node *_##name##node_temp; \
         int i; \
-        for (i = 0, _##name##node_temp = (struct _##name##node *)name->begin_ptr; _##name##node_temp != NULL; ++i, _##name##node_temp =_##name##node_temp->next) \
-            callback(_##name##node_temp->d, i, name->begin_ptr); \
-	} \
-	void name##_traverse(void) \
-	{ \
-        struct _##name##node *_##name##node_temp; \
-        const char *fmt = _get_format_internal(type); \
-        for (_##name##node_temp = (struct _##name##node *)name->begin_ptr; _##name##node_temp != NULL; _##name##node_temp =_##name##node_temp->next) { \
-            printf(fmt, (int)&(*_##name##node_temp->d)); \
-        } \
+        for (i = 0, _##name##node_temp = (struct _##name##node *)name->start; _##name##node_temp != NULL; ++i, _##name##node_temp =_##name##node_temp->next) \
+            callback(_##name##node_temp->d, i, name->start); \
 	} \
 	int name##_length(void) \
 	{ \
-        struct _##name##node *_##name##node_temp = (struct _##name##node *)name->begin_ptr; \
+        struct _##name##node *_##name##node_temp = (struct _##name##node *)name->start; \
         int i = 0; \
         while (_##name##node_temp != NULL) \
             ++i, _##name##node_temp =_##name##node_temp->next; \
@@ -60,7 +52,7 @@
             _##name##node_last->next = NULL; \
 		} \
         else \
-            name->begin_ptr = name->curr_ptr = name->end_ptr = name->next = NULL; \
+            name->start = name->curr_ptr = name->end_ptr = NULL; \
 		_delete_node_internal(_##name##node_temp); \
 		return NULL; \
 	} \
@@ -73,14 +65,13 @@
             _delete_node_internal(_##name##node_temp); \
             _##name##node_temp = (struct _##name##node *)name->end_ptr; \
         } \
-        name->begin_ptr = name->curr_ptr = name->end_ptr = name->next = NULL; \
+        name->start = name->curr_ptr = name->end_ptr = NULL; \
 	} \
     void name##_create_list(list_t **list) { \
 		*list = (list_t *)malloc(sizeof(list_t)); \
-		(*list)->begin_ptr = (*list)->curr_ptr = (*list)->end_ptr = (*list)->next = NULL; \
+		(*list)->start = (*list)->curr_ptr = (*list)->end_ptr = NULL; \
 		(*list)->insert = &name##_insert; \
 		(*list)->for_each = &name##_for_each; \
-		(*list)->traverse = &name##_traverse; \
 		(*list)->length = &name##_length; \
 		(*list)->remove = &name##_remove; \
 		(*list)->remove_last = &name##_remove_last;	\

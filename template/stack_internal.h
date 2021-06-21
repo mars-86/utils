@@ -12,29 +12,28 @@
 		struct _##name##node *prev;	\
 		struct _##name##node *next;	\
 	}; \
-	void name##_push(const void *n) \
+	void name##_push(const void *val) \
 	{ \
 		struct _##name##node *_##name##node_temp, *_##name##node_last; \
-		if ((name)->next == NULL) {	\
-			_create_node_internal(struct _##name##node, _##name##node_temp, ((type)n), NULL); \
-            name->base_ptr = name->top_ptr = name->next = (struct _##name##node *)_##name##node_temp; \
+		if ((name)->start == NULL) {	\
+			_create_node_internal(struct _##name##node, _##name##node_temp, ((type)val), NULL); \
+            name->start = name->top_ptr = (struct _##name##node *)_##name##node_temp; \
 			return; \
 		} \
 		_##name##node_last = (struct _##name##node *)name->top_ptr; \
-		_create_node_internal(struct _##name##node, _##name##node_temp, ((type)n), _##name##node_last); \
+		_create_node_internal(struct _##name##node, _##name##node_temp, ((type)val), _##name##node_last); \
 		name->top_ptr = _##name##node_last->next = (struct _##name##node *)_##name##node_temp; \
 	} \
-	void name##_traverse(void) \
+	void name##_for_each(void (*callback)(const void *elem, int index, stack_t **stack)) \
 	{ \
         struct _##name##node *_##name##node_temp; \
-        const char *fmt = _get_format_internal(type); \
-        for (_##name##node_temp = (struct _##name##node *)name->base_ptr; _##name##node_temp != NULL; _##name##node_temp =_##name##node_temp->next) { \
-            printf(fmt, (int)&(*_##name##node_temp->d)); \
-        } \
+        int i; \
+        for (i = 0, _##name##node_temp = (struct _##name##node *)name->start; _##name##node_temp != NULL; ++i, _##name##node_temp =_##name##node_temp->next) \
+            callback(_##name##node_temp->d, i, name->start); \
 	} \
 	int name##_length(void) \
 	{ \
-        struct _##name##node *_##name##node_temp = (struct _##name##node *)name->base_ptr; \
+        struct _##name##node *_##name##node_temp = (struct _##name##node *)name->start; \
         int i = 0; \
         while (_##name##node_temp != NULL) \
             ++i, _##name##node_temp =_##name##node_temp->next; \
@@ -50,7 +49,7 @@
             _##name##node_last->next = NULL; \
 		} \
         else \
-            name->base_ptr = name->top_ptr = name->next = NULL; \
+            name->start = name->top_ptr = NULL; \
 		_delete_node_internal(_##name##node_temp); \
 		return NULL; \
 	} \
@@ -63,13 +62,13 @@
             _delete_node_internal(_##name##node_temp); \
             _##name##node_temp = (struct _##name##node *)name->top_ptr; \
         } \
-        name->base_ptr = name->top_ptr = name->next = NULL; \
+        name->start = name->top_ptr = NULL; \
 	} \
     void name##_create_stack(stack_t **stack) { \
 		*stack = (stack_t *)malloc(sizeof(stack_t)); \
-		(*stack)->base_ptr = (*stack)->top_ptr = (*stack)->next = NULL; \
+		(*stack)->start = (*stack)->top_ptr = NULL; \
 		(*stack)->push = &name##_push; \
-		(*stack)->traverse = &name##_traverse; \
+		(*stack)->for_each = &name##_for_each; \
 		(*stack)->length = &name##_length; \
 		(*stack)->pop = &name##_pop; \
 		(*stack)->pop_all = &name##_pop_all; \

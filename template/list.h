@@ -8,15 +8,14 @@
 typedef struct _list list_t;
 
 struct _list {
-	void *begin_ptr, *curr_ptr, *end_ptr;
-	void (*insert)(const void *(n));
+	void *curr_ptr, *end_ptr;
+	void (*insert)(const void *val);
 	void (*for_each)(void (*callback)(const void *elem, int index, list_t **list));
-	void (*traverse)(void);
 	int (*length)(void);
 	void (*remove)(const void *);
 	void *(*remove_last)(void);
 	void (*remove_all)(void);
-	void *next;
+	void *start;
 };
 
 void delete_list(list_t **list);
