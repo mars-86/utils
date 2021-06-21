@@ -4,26 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define _create_node_internal(_node_base_type, _node_dest, _val, _node_prev) \
-( \
-     _node_dest = (_node_base_type *)malloc(sizeof(_node_base_type)), \
-    (_node_dest)->d = _val, \
-    (_node_dest)->prev = _node_prev, \
-    (_node_dest)->next = NULL \
-)
-
-#define _delete_node_internal(_node) \
-( \
-    free(_node) \
-)
-
-#define _get_format_internal(_type) \
-( \
-    !strcmp(#_type, "char *") ? "%s\n" : \
-    !strcmp(#_type, "int *") ? "%d\n" : \
-    !strcmp(#_type, "long *") ? "%ld\n" : "%d\n" \
-)
+#include "common.h"
 
 #define _new_list_internal(name, type) \
 	struct _##name##node { \
@@ -42,6 +23,13 @@
 		_##name##node_last = (struct _##name##node *)name->end_ptr; \
 		_create_node_internal(struct _##name##node, _##name##node_temp, ((type)n), _##name##node_last); \
 		name->end_ptr = _##name##node_last->next = (struct _##name##node *)_##name##node_temp; \
+	} \
+	void name##_for_each(void (*callback)(const void *elem, int index, list_t **list)) \
+	{ \
+        struct _##name##node *_##name##node_temp; \
+        int i; \
+        for (i = 0, _##name##node_temp = (struct _##name##node *)name->begin_ptr; _##name##node_temp != NULL; ++i, _##name##node_temp =_##name##node_temp->next) \
+            callback(_##name##node_temp->d, i, name->begin_ptr); \
 	} \
 	void name##_traverse(void) \
 	{ \
@@ -91,6 +79,7 @@
 		*list = (list_t *)malloc(sizeof(list_t)); \
 		(*list)->begin_ptr = (*list)->curr_ptr = (*list)->end_ptr = (*list)->next = NULL; \
 		(*list)->insert = &name##_insert; \
+		(*list)->for_each = &name##_for_each; \
 		(*list)->traverse = &name##_traverse; \
 		(*list)->length = &name##_length; \
 		(*list)->remove = &name##_remove; \
