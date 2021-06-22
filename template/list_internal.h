@@ -7,9 +7,6 @@
 #include "common.h"
 
 #define _new_list_internal(name, type) \
-    struct _##name##internal { \
-        void (*baz)(int n); \
-    }; \
 	struct _##name##node { \
 		type d;	\
 		struct _##name##node *prev;	\
