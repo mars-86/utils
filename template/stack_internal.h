@@ -12,19 +12,19 @@
 		struct _##name##node *prev;	\
 		struct _##name##node *next;	\
 	}; \
-	void name##_push(const void *val) \
+	void name##_push(type val) \
 	{ \
 		struct _##name##node *_##name##node_temp, *_##name##node_last; \
 		if ((name)->start == NULL) {	\
-			_create_node_internal(struct _##name##node, _##name##node_temp, ((type)val), NULL); \
+			_create_node_internal(struct _##name##node, _##name##node_temp, val, NULL); \
             name->start = name->top_ptr = (struct _##name##node *)_##name##node_temp; \
 			return; \
 		} \
 		_##name##node_last = (struct _##name##node *)name->top_ptr; \
-		_create_node_internal(struct _##name##node, _##name##node_temp, ((type)val), _##name##node_last); \
+		_create_node_internal(struct _##name##node, _##name##node_temp, val, _##name##node_last); \
 		name->top_ptr = _##name##node_last->next = (struct _##name##node *)_##name##node_temp; \
 	} \
-	void name##_for_each(void (*callback)(const void *elem, int index, stack_t **stack)) \
+	void name##_for_each(void (*callback)(type elem, int index, stack_t **stack)) \
 	{ \
         struct _##name##node *_##name##node_temp; \
         int i; \

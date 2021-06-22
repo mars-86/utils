@@ -9,8 +9,8 @@ typedef struct _queue queue_t;
 
 struct _queue {
 	void *end_ptr;
-	void (*insert)(const void *val);
-	void (*for_each)(void (*callback)(const void *elem, int index, queue_t **queue));
+	void (*insert)(/* type val */);
+	void (*for_each)(void (*callback)(/* type val, int index, queue_t **queue */));
 	int (*length)(void);
 	void *(*remove)(void);
 	void (*remove_all)(void);

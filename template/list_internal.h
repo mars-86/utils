@@ -7,24 +7,27 @@
 #include "common.h"
 
 #define _new_list_internal(name, type) \
+    struct _##name##internal { \
+        void (*baz)(int n); \
+    }; \
 	struct _##name##node { \
 		type d;	\
 		struct _##name##node *prev;	\
 		struct _##name##node *next;	\
 	}; \
-	void name##_insert(const void *val) \
+	void name##_insert(type val) \
 	{ \
 		struct _##name##node *_##name##node_temp, *_##name##node_last; \
 		if ((name)->start == NULL) {	\
-			_create_node_internal(struct _##name##node, _##name##node_temp, ((type)val), NULL); \
+			_create_node_internal(struct _##name##node, _##name##node_temp, val, NULL); \
             name->start = name->curr_ptr = name->end_ptr = (struct _##name##node *)_##name##node_temp; \
 			return; \
 		} \
 		_##name##node_last = (struct _##name##node *)name->end_ptr; \
-		_create_node_internal(struct _##name##node, _##name##node_temp, ((type)val), _##name##node_last); \
+		_create_node_internal(struct _##name##node, _##name##node_temp, val, _##name##node_last); \
 		name->end_ptr = _##name##node_last->next = (struct _##name##node *)_##name##node_temp; \
 	} \
-	void name##_for_each(void (*callback)(const void *elem, int index, list_t **list)) \
+	void name##_for_each(void (*callback)(type elem, int index, list_t **list)) \
 	{ \
         struct _##name##node *_##name##node_temp; \
         int i; \
@@ -39,7 +42,7 @@
             ++i, _##name##node_temp =_##name##node_temp->next; \
         return i; \
 	} \
-	void name##_remove(const void *node) \
+	void name##_remove(type node) \
 	{ \
 	} \
 	void *name##_remove_last(void) \
