@@ -9,10 +9,10 @@ typedef struct _list list_t;
 
 struct _list {
 	void *curr_ptr, *end_ptr;
-	void (*insert)(const void *val);
-	void (*for_each)(void (*callback)(const void *elem, int index, list_t **list));
+	void (*insert)(/* type val */);
+	void (*for_each)(void (*callback)(/* type val, int index, list_t **list */));
 	int (*length)(void);
-	void (*remove)(const void *);
+	void (*remove)(/* type val */);
 	void *(*remove_last)(void);
 	void (*remove_all)(void);
 	void *start;

@@ -9,8 +9,8 @@ typedef struct _stack stack_t;
 
 struct _stack {
 	void *top_ptr;
-	void (*push)(const void *val);
-	void (*for_each)(void (*callback)(const void *elem, int index, stack_t **stack));
+	void (*push)(/* type val */);
+	void (*for_each)(void (*callback)(/* type val, int index, stack_t **stack */));
 	int (*length)(void);
 	void *(*pop)(void);
 	void (*pop_all)(void);
