@@ -26,11 +26,11 @@
 	} \
 	void name##_for_each(void (*callback)(type elem, int index, stack_t **stack)) \
 	{ \
-        _template_for_each_internal(_##name##node, name, callback); \
+        _template_for_each_internal(struct _##name##node, name, callback); \
 	} \
 	int name##_length(void) \
 	{ \
-        _template_length_internal(_##name##node, name); \
+        _template_length_internal(struct _##name##node, name); \
 	} \
 	void *name##_pop(void) \
 	{ \
@@ -48,13 +48,7 @@
 	} \
 	void name##_pop_all(void) \
 	{ \
-        if(name->top_ptr == NULL) return; \
-        struct _##name##node *_##name##node_temp = (struct _##name##node *)name->top_ptr; \
-        while(_##name##node_temp != NULL) { \
-            name->top_ptr = _##name##node_temp->prev; \
-            _delete_node_internal(_##name##node_temp); \
-            _##name##node_temp = (struct _##name##node *)name->top_ptr; \
-        } \
+        _template_remove_all_internal(struct _##name##node, name, top_ptr); \
         name->start = name->top_ptr = NULL; \
 	} \
     void name##_create_stack(stack_t **stack) { \

@@ -26,11 +26,11 @@
 	} \
 	void name##_for_each(void (*callback)(type elem, int index, list_t **list)) \
 	{ \
-        _template_for_each_internal(_##name##node, name, callback); \
+        _template_for_each_internal(struct _##name##node, name, callback); \
 	} \
 	int name##_length(void) \
 	{ \
-        _template_length_internal(_##name##node, name); \
+        _template_length_internal(struct _##name##node, name); \
 	} \
 	void name##_remove(type node) \
 	{ \
@@ -51,13 +51,7 @@
 	} \
 	void name##_remove_all(void) \
 	{ \
-        if(name->end_ptr == NULL) return; \
-        struct _##name##node *_##name##node_temp = (struct _##name##node *)name->end_ptr; \
-        while(_##name##node_temp != NULL) { \
-            name->end_ptr = _##name##node_temp->prev; \
-            _delete_node_internal(_##name##node_temp); \
-            _##name##node_temp = (struct _##name##node *)name->end_ptr; \
-        } \
+        _template_remove_all_internal(struct _##name##node, name, end_ptr); \
         name->start = name->curr_ptr = name->end_ptr = NULL; \
 	} \
     void name##_create_list(list_t **list) { \

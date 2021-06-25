@@ -21,17 +21,26 @@
     !strcmp(#_type, "long *") ? "%ld\n" : "%d\n" \
 )
 
-#define _template_for_each_internal(_base_node, _this_node, callback) \
-    struct _base_node *_base_node_temp; \
+#define _template_for_each_internal(_node_base_type, _this_node, callback) \
+    _node_base_type *_base_node_temp; \
     int i; \
-    for (i = 0, _base_node_temp = (struct _base_node *)_this_node->start; _base_node_temp != NULL; ++i, _base_node_temp = _base_node_temp->next) \
+    for (i = 0, _base_node_temp = (_node_base_type *)_this_node->start; _base_node_temp != NULL; ++i, _base_node_temp = _base_node_temp->next) \
         callback(_base_node_temp->d, i, _this_node->start);
 
-#define _template_length_internal(_base_node, _this_node) \
-    struct _base_node *_base_node_temp = (struct _base_node *)_this_node->start; \
+#define _template_length_internal(_node_base_type, _this_node) \
+    _node_base_type *_base_node_temp = (_node_base_type *)_this_node->start; \
         int i = 0; \
         while (_base_node_temp != NULL) \
             ++i, _base_node_temp = _base_node_temp->next; \
         return i;
+
+#define _template_remove_all_internal(_base_node_type, _this_node, _this_node_back_ptr) \
+    if(_this_node->_this_node_back_ptr == NULL) return; \
+        _base_node_type *_base_node_temp = (_base_node_type *)_this_node->_this_node_back_ptr; \
+        while(_base_node_temp != NULL) { \
+            _this_node->_this_node_back_ptr = _base_node_temp->prev; \
+            _delete_node_internal(_base_node_temp); \
+            _base_node_temp = (_base_node_type *)_this_node->_this_node_back_ptr; \
+        } \
 
 #endif // _TEMPLATE_COMMON_INCLUDED_H_
