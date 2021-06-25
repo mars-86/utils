@@ -26,10 +26,7 @@
 	} \
 	void name##_for_each(void (*callback)(type elem, int index, list_t **list)) \
 	{ \
-        struct _##name##node *_##name##node_temp; \
-        int i; \
-        for (i = 0, _##name##node_temp = (struct _##name##node *)name->start; _##name##node_temp != NULL; ++i, _##name##node_temp =_##name##node_temp->next) \
-            callback(_##name##node_temp->d, i, name->start); \
+        _template_for_each_internal(_##name##node, name, callback); \
 	} \
 	int name##_length(void) \
 	{ \

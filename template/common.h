@@ -21,4 +21,10 @@
     !strcmp(#_type, "long *") ? "%ld\n" : "%d\n" \
 )
 
+#define _template_for_each_internal(_base_node, _this_node, callback) \
+    struct _base_node *_base_node_temp; \
+    int i; \
+    for (i = 0, _base_node_temp = (struct _base_node *)_this_node->start; _base_node_temp != NULL; ++i, _base_node_temp = _base_node_temp->next) \
+        callback(_base_node_temp->d, i, _this_node->start);
+
 #endif // _TEMPLATE_COMMON_INCLUDED_H_
