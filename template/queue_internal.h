@@ -16,12 +16,12 @@
 	{ \
 		struct _##name##node *_##name##node_temp, *_##name##node_last; \
 		if ((name)->start == NULL) {	\
-			_create_node_internal(struct _##name##node, _##name##node_temp, val, NULL); \
+			_template_create_node_internal(struct _##name##node, _##name##node_temp, val, NULL); \
             name->start = name->end_ptr = (struct _##name##node *)_##name##node_temp; \
 			return; \
 		} \
 		_##name##node_last = (struct _##name##node *)name->end_ptr; \
-		_create_node_internal(struct _##name##node, _##name##node_temp, val, _##name##node_last); \
+		_template_create_node_internal(struct _##name##node, _##name##node_temp, val, _##name##node_last); \
 		name->end_ptr = _##name##node_last->next = (struct _##name##node *)_##name##node_temp; \
 	} \
 	void name##_for_each(void (*callback)(type elem, int index, queue_t **queue)) \
@@ -43,7 +43,7 @@
 		} \
         else \
             name->start = name->end_ptr = NULL; \
-		_delete_node_internal(_##name##node_temp); \
+		_template_delete_node_internal(_##name##node_temp); \
 		return NULL; \
 	} \
 	void name##_remove_all(void) \

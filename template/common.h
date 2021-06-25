@@ -1,7 +1,7 @@
 #ifndef _TEMPLATE_COMMON_INCLUDED_H_
 #define _TEMPLATE_COMMON_INCLUDED_H_
 
-#define _create_node_internal(_node_base_type, _node_dest, _val, _node_prev) \
+#define _template_create_node_internal(_node_base_type, _node_dest, _val, _node_prev) \
 ( \
      _node_dest = (_node_base_type *)malloc(sizeof(_node_base_type)), \
     (_node_dest)->d = _val, \
@@ -9,7 +9,7 @@
     (_node_dest)->next = NULL \
 )
 
-#define _delete_node_internal(_node) \
+#define _template_delete_node_internal(_node) \
 ( \
     free(_node) \
 )
@@ -39,7 +39,7 @@
         _base_node_type *_base_node_temp = (_base_node_type *)_this_node->_this_node_back_ptr; \
         while(_base_node_temp != NULL) { \
             _this_node->_this_node_back_ptr = _base_node_temp->prev; \
-            _delete_node_internal(_base_node_temp); \
+            _template_delete_node_internal(_base_node_temp); \
             _base_node_temp = (_base_node_type *)_this_node->_this_node_back_ptr; \
         } \
 
