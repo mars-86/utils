@@ -27,4 +27,11 @@
     for (i = 0, _base_node_temp = (struct _base_node *)_this_node->start; _base_node_temp != NULL; ++i, _base_node_temp = _base_node_temp->next) \
         callback(_base_node_temp->d, i, _this_node->start);
 
+#define _template_length_internal(_base_node, _this_node) \
+    struct _base_node *_base_node_temp = (struct _base_node *)_this_node->start; \
+        int i = 0; \
+        while (_base_node_temp != NULL) \
+            ++i, _base_node_temp = _base_node_temp->next; \
+        return i;
+
 #endif // _TEMPLATE_COMMON_INCLUDED_H_
