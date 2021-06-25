@@ -30,11 +30,7 @@
 	} \
 	int name##_length(void) \
 	{ \
-        struct _##name##node *_##name##node_temp = (struct _##name##node *)name->start; \
-        int i = 0; \
-        while (_##name##node_temp != NULL) \
-            ++i, _##name##node_temp =_##name##node_temp->next; \
-        return i; \
+        _template_length_internal(_##name##node, name); \
 	} \
 	void *name##_remove(void) \
 	{ \

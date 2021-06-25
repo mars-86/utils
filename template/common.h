@@ -14,7 +14,7 @@
     free(_node) \
 )
 
-#define _get_format_internal(_type) \
+#define _template_get_format_internal(_type) \
 ( \
     !strcmp(#_type, "char *") ? "%s\n" : \
     !strcmp(#_type, "int *") ? "%d\n" : \
