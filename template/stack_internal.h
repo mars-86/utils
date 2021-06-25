@@ -16,28 +16,21 @@
 	{ \
 		struct _##name##node *_##name##node_temp, *_##name##node_last; \
 		if ((name)->start == NULL) {	\
-			_create_node_internal(struct _##name##node, _##name##node_temp, val, NULL); \
+			_template_create_node_internal(struct _##name##node, _##name##node_temp, val, NULL); \
             name->start = name->top_ptr = (struct _##name##node *)_##name##node_temp; \
 			return; \
 		} \
 		_##name##node_last = (struct _##name##node *)name->top_ptr; \
-		_create_node_internal(struct _##name##node, _##name##node_temp, val, _##name##node_last); \
+		_template_create_node_internal(struct _##name##node, _##name##node_temp, val, _##name##node_last); \
 		name->top_ptr = _##name##node_last->next = (struct _##name##node *)_##name##node_temp; \
 	} \
 	void name##_for_each(void (*callback)(type elem, int index, stack_t **stack)) \
 	{ \
-        struct _##name##node *_##name##node_temp; \
-        int i; \
-        for (i = 0, _##name##node_temp = (struct _##name##node *)name->start; _##name##node_temp != NULL; ++i, _##name##node_temp =_##name##node_temp->next) \
-            callback(_##name##node_temp->d, i, name->start); \
+        _template_for_each_internal(struct _##name##node, name, callback); \
 	} \
 	int name##_length(void) \
 	{ \
-        struct _##name##node *_##name##node_temp = (struct _##name##node *)name->start; \
-        int i = 0; \
-        while (_##name##node_temp != NULL) \
-            ++i, _##name##node_temp =_##name##node_temp->next; \
-        return i; \
+        _template_length_internal(struct _##name##node, name); \
 	} \
 	void *name##_pop(void) \
 	{ \
@@ -50,18 +43,12 @@
 		} \
         else \
             name->start = name->top_ptr = NULL; \
-		_delete_node_internal(_##name##node_temp); \
+		_template_delete_node_internal(_##name##node_temp); \
 		return NULL; \
 	} \
 	void name##_pop_all(void) \
 	{ \
-        if(name->top_ptr == NULL) return; \
-        struct _##name##node *_##name##node_temp = (struct _##name##node *)name->top_ptr; \
-        while(_##name##node_temp != NULL) { \
-            name->top_ptr = _##name##node_temp->prev; \
-            _delete_node_internal(_##name##node_temp); \
-            _##name##node_temp = (struct _##name##node *)name->top_ptr; \
-        } \
+        _template_remove_all_internal(struct _##name##node, name, top_ptr); \
         name->start = name->top_ptr = NULL; \
 	} \
     void name##_create_stack(stack_t **stack) { \
