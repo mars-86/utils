@@ -16,26 +16,32 @@ void perror_m(const char *msg)
 int open_connection(socket_t *sock)
 {
     WSADATA wsa;
-
     if(WSAStartup(MAKEWORD(2,2), &wsa) != 0) {
         perror_m("WSAStartup failed");
         return -1;
     }
 
-	if ((sock->descriptor = socket(sock->domain, sock->type, sock->protocol)) == 0) {
+    int sock_s;
+	if ((sock_s = socket(sock->domain, sock->type, sock->protocol)) == 0) {
         perror_m("create socket failed");
         return -1;
 	}
 
-    if (bind(sock->descriptor, (struct sockaddr *)&sock->sa, sizeof(sock->sa)) < 0) {
+    if (bind(sock_s, (struct sockaddr *)&sock->sa, sizeof(sock->sa)) < 0) {
         perror_m("bind socket");
         return -1;
     }
 
-	if (listen(sock->descriptor, sock->n_conn) < 0) {
+	if (listen(sock_s, sock->n_conn) < 0) {
 		perror_m("listen failed");
         return -1;
 	}
+
+	if ((sock->descriptor = accept(sock_s, NULL, NULL)) == 0) {
+        perror_m("accept failed");
+        return -1;
+	}
+    closesocket(sock_s);
 
 	return 0;
 }

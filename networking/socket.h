@@ -3,6 +3,7 @@
 
 // #include <sys/socket.h>
 #include <winsock2.h>
+#pragma comment (lib, "Ws2_32.lib")
 
 enum {
 	TCP_SOCKET = SOCK_STREAM,
@@ -20,6 +21,7 @@ struct {
 	struct sockaddr_in sa;
 } typedef socket_t;
 
+void perror_m(const char *msg);
 int open_connection(socket_t *socket);
 int close_connection(socket_t *socket);
 
