@@ -1,9 +1,14 @@
 #ifndef _NETWORKING_SOCKET_INCLUDED_H_
 #define _NETWORKING_SOCKET_INCLUDED_H_
 
-// #include <sys/socket.h>
+#ifdef __WIN32
 #include <winsock2.h>
+#ifdef _MSC_VER
 #pragma comment (lib, "Ws2_32.lib")
+#endif // _MSC_VER
+#else
+#include <sys/socket.h>
+#endif // __WIN32
 
 enum {
 	TCP_SOCKET = SOCK_STREAM,
