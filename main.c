@@ -1,4 +1,5 @@
 #include "networking/socket.h"
+#include "networking/header.h"
 #include "os/os.h"
 #include <stdio.h>
 
@@ -16,18 +17,15 @@ int main(void)
     if (!open_connection(&sock))
         printf("Listening for connections\n");
 
-    char buff[512];
-    char res[] =
-                "HTTP/1.1 200 OK\r\n\r\n"
-                "<h1>We've got a badass over here!</h1>";
-
+    char buff[512], buff_s[512];
     int bytes_recv, bytes_send;
     do {
         bytes_recv = 1;
         bytes_recv = recv(sock.descriptor, buff, 128, 0);
         if (bytes_recv > 0) {
             printf("%s\n", buff);
-            bytes_send = send(sock.descriptor, res, strlen(res), 0);
+            generate_headers(buff_s, OK, "<h1>We've got a badass over here!</h1>");
+            bytes_send = send(sock.descriptor, buff_s, strlen(buff_s), 0);
             if (bytes_send == -1)
                 perror_win("send");
             else
