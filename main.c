@@ -1,10 +1,18 @@
 #include "networking/socket.h"
 #include "networking/header.h"
 #include "os/os.h"
+#include "view/table.h"
 #include <stdio.h>
 
 int main(void)
 {
+    table_t *tab;
+    const char *head[] = {"col1", "col2", "col3"};
+    table_create(&tab, head, NULL);
+    table_print(tab);
+    table_cleanup(&tab);
+
+    /*
     socket_t sock;
     sock.domain = AF_INET;
     sock.type = TCP_SOCKET;
@@ -38,6 +46,6 @@ int main(void)
     } while (bytes_recv > 0);
 
     close_connection(&sock);
-
+    */
     return 0;
 }
