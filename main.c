@@ -2,9 +2,15 @@
 #include "networking/header.h"
 #include "os/os.h"
 #include <stdio.h>
+#include "template_v2/stack.h"
+
+new_stack_type(int);
+new_stack(my_stack, int);
 
 int main(void)
 {
+    my_stack;
+/*
     socket_t sock;
     sock.domain = AF_INET;
     sock.type = TCP_SOCKET;
@@ -38,6 +44,6 @@ int main(void)
     } while (bytes_recv > 0);
 
     close_connection(&sock);
-
+*/
     return 0;
 }
