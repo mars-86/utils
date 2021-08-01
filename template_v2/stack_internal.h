@@ -6,69 +6,69 @@
 #include <string.h>
 #include "common.h"
 
-#define _new_stack_type(type) \
+#define _new_stack_type_internal(type) \
     struct _##type##_stack_node { \
 		type d;	\
 		struct _##type##_stack_node *prev;	\
 		struct _##type##_stack_node *next;	\
-	}; \
+	} typedef type##_stack_node_t; \
+	\
 	struct _##type##_stack { \
+        struct _##type##_stack_node *top_ptr; \
         struct _##type##_stack_node *start; \
-    } typedef _type##_stack_t;
-
-#define _new_stack_internal(name, type) \
-    _type##_stack_t *name = NULL;
-
-/*
-#define _stack_methods(type) \
-	void type##_push(stack, type val) \
+    } typedef type##_stack_t; \
+    \
+    void type##_stack_push(type##_stack_t **stack, type val) \
 	{ \
-		struct _##name##node *_##name##node_temp, *_##name##node_last; \
-		if ((name)->start == NULL) {	\
-			_template_create_node_internal(struct _##name##node, _##name##node_temp, val, NULL); \
-            name->start = name->top_ptr = (struct _##name##node *)_##name##node_temp; \
+		struct _##type##_stack_node *_##type##_stack_node_temp, *_##type##_stack_node_last; \
+		if ((*stack)->start == NULL) {	\
+			_template_create_node_internal(struct _##type##_stack_node, _##type##_stack_node_temp, val, NULL); \
+            (*stack)->start = (*stack)->top_ptr = (struct _##type##_stack_node *)_##type##_stack_node_temp; \
 			return; \
 		} \
-		_##name##node_last = (struct _##name##node *)name->top_ptr; \
-		_template_create_node_internal(struct _##name##node, _##name##node_temp, val, _##name##node_last); \
-		name->top_ptr = _##name##node_last->next = (struct _##name##node *)_##name##node_temp; \
+		_##type##_stack_node_last = (struct _##type##_stack_node *)(*stack)->top_ptr; \
+		_template_create_node_internal(struct _##type##_stack_node, _##type##_stack_node_temp, val, _##type##_stack_node_last); \
+		(*stack)->top_ptr = _##type##_stack_node_last->next = (struct _##type##_stack_node *)_##type##_stack_node_temp; \
 	} \
-	void type##_for_each(void (*callback)(type elem, int index, stack_t **stack)) \
+	\
+	void type##_stack_for_each(type##_stack_t **stack, void (*callback)(type elem, int index, type##_stack_t **stack)) \
 	{ \
-        _template_for_each_internal(struct _##name##node, name, callback); \
+        _template_for_each_internal(struct _##type##_stack_node, (*stack), callback); \
 	} \
-	int type##_length(void) \
+	\
+    int type##_stack_length(type##_stack_t *stack) \
 	{ \
-        _template_length_internal(struct _##name##node, name); \
+        _template_length_internal(struct _##type##_stack_node, stack); \
 	} \
-	void *type##_pop(void) \
+	\
+	void *type##_stack_pop(type##_stack_t **stack) \
 	{ \
-        if(name->top_ptr == NULL) return NULL; \
-		struct _##name##node *_##name##node_temp, *_##name##node_last; \
-		_##name##node_temp = (struct _##name##node *)name->top_ptr; \
-		if(_##name##node_temp->prev != NULL) { \
-            name->top_ptr = _##name##node_last = _##name##node_temp->prev; \
-            _##name##node_last->next = NULL; \
+        if((*stack)->top_ptr == NULL) return NULL; \
+		struct _##type##_stack_node *_##type##_stack_node_temp, *_##type##_stack_node_last; \
+		_##type##_stack_node_temp = (struct _##type##_stack_node *)(*stack)->top_ptr; \
+		if(_##type##_stack_node_temp->prev != NULL) { \
+            (*stack)->top_ptr = _##type##_stack_node_last = _##type##_stack_node_temp->prev; \
+            _##type##_stack_node_last->next = NULL; \
 		} \
         else \
-            name->start = name->top_ptr = NULL; \
-		_template_delete_node_internal(_##name##node_temp); \
+            (*stack)->start = (*stack)->top_ptr = NULL; \
+		_template_delete_node_internal(_##type##_stack_node_temp); \
 		return NULL; \
 	} \
-	void type##_pop_all(void) \
+	\
+	void type##_stack_pop_all(type##_stack_t **stack) \
 	{ \
-        _template_remove_all_internal(struct _##name##node, name, top_ptr); \
-        name->start = name->top_ptr = NULL; \
+        _template_remove_all_internal(struct _##type##_stack_node, (*stack), top_ptr); \
+        (*stack)->start = (*stack)->top_ptr = NULL; \
 	} \
-    void type##_create_stack(stack_t **stack) { \
-		*stack = (stack_t *)malloc(sizeof(stack_t)); \
-		(*stack)->start = (*stack)->top_ptr = NULL; \
-		(*stack)->push = &name##_push; \
-		(*stack)->for_each = &name##_for_each; \
-		(*stack)->length = &name##_length; \
-		(*stack)->pop = &name##_pop; \
-		(*stack)->pop_all = &name##_pop_all; \
-	} \
-	type##_create_stack(&name);
-*/
+	\
+	void type##_stack_delete(type##_stack_t **stack) \
+	{ \
+        free(*stack); \
+	}
+
+#define _new_stack_internal(name, type) \
+    type##_stack_t *name = (type##_stack_t *)malloc(sizeof(type##_stack_t)); \
+    name->start = name->top_ptr = NULL;
+
 #endif // _TEMPLATE_STACK_INTERNAL_INCLUDED_H_

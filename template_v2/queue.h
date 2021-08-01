@@ -3,7 +3,8 @@
 
 #include "queue_internal.h"
 
-#define new_queue(name, type) _new_queue_internal(name, type)
+#define new_queue_type(type) _new_queue_internal(type)
+#define new_queue(name, type) _new_stack_internal(name, type)
 
 typedef struct _queue queue_t;
 

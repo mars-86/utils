@@ -3,7 +3,7 @@
 
 #include "stack_internal.h"
 
-#define new_stack_type(type) _new_stack_type(type)
+#define new_stack_type(type) _new_stack_type_internal(type)
 #define new_stack(name, type) _new_stack_internal(name, type)
 // #define stack_methods(type) _stack_methods(type)
 

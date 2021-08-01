@@ -25,7 +25,7 @@
     _node_base_type *_base_node_temp; \
     int i; \
     for (i = 0, _base_node_temp = (_node_base_type *)_this_node->start; _base_node_temp != NULL; ++i, _base_node_temp = _base_node_temp->next) \
-        callback(_base_node_temp->d, i, _this_node->start);
+        callback(_base_node_temp->d, i, &_this_node);
 
 #define _template_length_internal(_node_base_type, _this_node) \
     _node_base_type *_base_node_temp = (_node_base_type *)_this_node->start; \

@@ -5,11 +5,39 @@
 #include "template_v2/stack.h"
 
 new_stack_type(int);
-new_stack(my_stack, int);
+
+void int_stack_print(int val, int index, int_stack_t **stack) {
+    printf("%d ", val);
+}
 
 int main(void)
 {
-    my_stack;
+    int_stack_t stck;
+    new_stack(my_stack, int);
+    new_stack(my_stack2, int);
+    int_stack_push(&my_stack, 4);
+    int_stack_push(&my_stack, 10);
+    int_stack_push(&my_stack, 13);
+    int_stack_push(&my_stack, 7);
+    int_stack_for_each(&my_stack, int_stack_print);
+    printf("\n");
+    printf("%d\n", int_stack_length(my_stack));
+    int_stack_push(&my_stack2, 33);
+    int_stack_push(&my_stack2, 4252);
+    int_stack_push(&my_stack2, 67);
+    int_stack_push(&my_stack2, 79);
+    int_stack_for_each(&my_stack2, int_stack_print);
+    printf("\n");
+    printf("%d\n", int_stack_length(my_stack2));
+    int_stack_pop_all(&my_stack);
+    int_stack_for_each(&my_stack, int_stack_print);
+    printf("\n");
+    printf("%d\n", int_stack_length(my_stack));
+    int_stack_delete(&my_stack);
+    int_stack_delete(&my_stack2);
+
+    int_stack_push((&stck), 79);
+    int_stack_for_each((&stck), int_stack_print);
 /*
     socket_t sock;
     sock.domain = AF_INET;
