@@ -64,6 +64,7 @@
 	\
 	void type##_stack_delete(type##_stack_t **stack) \
 	{ \
+        type##_stack_pop_all(&(*stack)); \
         free(*stack); \
 	}
 

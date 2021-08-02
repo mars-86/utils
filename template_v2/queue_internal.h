@@ -6,60 +6,70 @@
 #include <string.h>
 #include "common.h"
 
-#define _new_queue_internal(name, type) \
-	struct _##name##node { \
+#define _new_queue_type_internal(type) \
+	struct _##type##_queue_node { \
 		type d;	\
-		struct _##name##node *prev;	\
-		struct _##name##node *next;	\
-	}; \
-	void name##_insert(type val) \
+		struct _##type##_queue_node *prev;	\
+		struct _##type##_queue_node *next;	\
+	} typedef type##_queue_node_t; \
+	\
+	struct _##type##_queue { \
+        struct _##type##_queue_node *end_ptr; \
+        struct _##type##_queue_node *start; \
+    } typedef type##_queue_t; \
+    \
+	void type##_queue_insert(type##_queue_t **queue, type val) \
 	{ \
-		struct _##name##node *_##name##node_temp, *_##name##node_last; \
-		if ((name)->start == NULL) {	\
-			_template_create_node_internal(struct _##name##node, _##name##node_temp, val, NULL); \
-            name->start = name->end_ptr = (struct _##name##node *)_##name##node_temp; \
+		struct _##type##_queue_node *_##type##_queue_node_temp, *_##type##_queue_node_last; \
+		if ((*queue)->start == NULL) {	\
+			_template_create_node_internal(struct _##type##_queue_node, _##type##_queue_node_temp, val, NULL); \
+            (*queue)->start = (*queue)->end_ptr = (struct _##type##_queue_node *)_##type##_queue_node_temp; \
 			return; \
 		} \
-		_##name##node_last = (struct _##name##node *)name->end_ptr; \
-		_template_create_node_internal(struct _##name##node, _##name##node_temp, val, _##name##node_last); \
-		name->end_ptr = _##name##node_last->next = (struct _##name##node *)_##name##node_temp; \
+		_##type##_queue_node_last = (struct _##type##_queue_node *)(*queue)->end_ptr; \
+		_template_create_node_internal(struct _##type##_queue_node, _##type##_queue_node_temp, val, _##type##_queue_node_last); \
+		(*queue)->end_ptr = _##type##_queue_node_last->next = (struct _##type##_queue_node *)_##type##_queue_node_temp; \
 	} \
-	void name##_for_each(void (*callback)(type elem, int index, queue_t **queue)) \
+	\
+	void type##_queue_for_each(type##_queue_t **queue, void (*callback)(type elem, int index, type##_queue_t **queue)) \
 	{ \
-        _template_for_each_internal(struct _##name##node, name, callback); \
+        _template_for_each_internal(struct _##type##_queue_node, (*queue), callback); \
 	} \
-	int name##_length(void) \
+	\
+	int type##_queue_length(type##_queue_t *queue) \
 	{ \
-        _template_length_internal(struct _##name##node, name); \
+        _template_length_internal(struct _##type##_queue_node, queue); \
 	} \
-	void *name##_remove(void) \
+	\
+	void *type##_queue_remove(type##_queue_t **queue) \
 	{ \
-        if(name->start == NULL) return NULL; \
-		struct _##name##node *_##name##node_temp, *_##name##node_last; \
-		_##name##node_temp = (struct _##name##node *)name->start; \
-		if(_##name##node_temp->next != NULL) { \
-            name->start = _##name##node_last = _##name##node_temp->next; \
-            _##name##node_last->prev = NULL; \
+        if((*queue)->start == NULL) return NULL; \
+		struct _##type##_queue_node *_##type##_queue_node_temp, *_##type##_queue_node_last; \
+		_##type##_queue_node_temp = (struct _##type##_queue_node *)(*queue)->start; \
+		if(_##type##_queue_node_temp->next != NULL) { \
+            (*queue)->start = _##type##_queue_node_last = _##type##_queue_node_temp->next; \
+            _##type##_queue_node_last->prev = NULL; \
 		} \
         else \
-            name->start = name->end_ptr = NULL; \
-		_template_delete_node_internal(_##name##node_temp); \
+            (*queue)->start = (*queue)->end_ptr = NULL; \
+		_template_delete_node_internal(_##type##_queue_node_temp); \
 		return NULL; \
 	} \
-	void name##_remove_all(void) \
+	\
+	void type##_queue_remove_all(type##_queue_t **queue) \
 	{ \
-        _template_remove_all_internal(struct _##name##node, name, end_ptr); \
-        name->start = name->end_ptr = NULL; \
+        _template_remove_all_internal(struct _##type##_queue_node, (*queue), end_ptr); \
+        (*queue)->start = (*queue)->end_ptr = NULL; \
 	} \
-    void name##_create_list(queue_t **queue) { \
-		*queue = (queue_t *)malloc(sizeof(queue_t)); \
-		(*queue)->start = (*queue)->end_ptr = NULL; \
-		(*queue)->insert = &name##_insert; \
-		(*queue)->for_each = &name##_for_each; \
-		(*queue)->length = &name##_length; \
-		(*queue)->remove = &name##_remove;	\
-		(*queue)->remove_all = &name##_remove_all; \
-	} \
-	name##_create_list(&name);
+	\
+	void type##_queue_delete(type##_queue_t **queue) \
+	{ \
+        type##_queue_remove_all(&(*queue)); \
+        free(*queue); \
+	}
+
+#define _new_queue_internal(name, type) \
+    type##_queue_t *name = (type##_queue_t *)malloc(sizeof(type##_queue_t)); \
+    name->start = name->end_ptr = NULL;
 
 #endif // _TEMPLATE_QUEUE_INTERNAL_INCLUDED_H_

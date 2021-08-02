@@ -3,21 +3,7 @@
 
 #include "queue_internal.h"
 
-#define new_queue_type(type) _new_queue_internal(type)
-#define new_queue(name, type) _new_stack_internal(name, type)
-
-typedef struct _queue queue_t;
-
-struct _queue {
-	void *end_ptr;
-	void (*insert)(/* type val */);
-	void (*for_each)(void (*callback)(/* type val, int index, queue_t **queue */));
-	int (*length)(void);
-	void *(*remove)(void);
-	void (*remove_all)(void);
-	void *start;
-};
-
-void delete_queue(queue_t **queue);
+#define new_queue_type(type) _new_queue_type_internal(type)
+#define new_queue(name, type) _new_queue_internal(name, type)
 
 #endif // _TEMPLATE_QUEUE_INCLUDED_H_
