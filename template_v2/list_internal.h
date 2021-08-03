@@ -6,64 +6,84 @@
 #include <string.h>
 #include "common.h"
 
-#define _new_list_internal(name, type) \
-	struct _##name##node { \
+#define _new_list_type_internal(type, adt) \
+    struct _##type##_list_node { \
 		type d;	\
-		struct _##name##node *prev;	\
-		struct _##name##node *next;	\
-	}; \
-	void name##_insert(type val) \
+		struct _##type##_list_node *prev;	\
+		struct _##type##_list_node *next;	\
+	} typedef type##_list_node_t; \
+	\
+	struct _##type##_list { \
+        struct _##type##_list_node *curr_ptr, *end_ptr; \
+        struct _##type##_list_node *start; \
+    } typedef type##_list_t; \
+    \
+	void type##adt##insert(type##_list_t **list, type val) \
 	{ \
-		struct _##name##node *_##name##node_temp, *_##name##node_last; \
-		if ((name)->start == NULL) {	\
-			_template_create_node_internal(struct _##name##node, _##name##node_temp, val, NULL); \
-            name->start = name->curr_ptr = name->end_ptr = (struct _##name##node *)_##name##node_temp; \
+		struct _##type##_list_node *_##type##_list_node_temp, *_##type##_list_node_last; \
+		if ((*list)->start == NULL) {	\
+			_template_create_node_internal(struct _##type##_list_node, _##type##_list_node_temp, val, NULL); \
+            (*list)->start = (*list)->curr_ptr = (*list)->end_ptr = (struct _##type##_list_node *)_##type##_list_node_temp; \
 			return; \
 		} \
-		_##name##node_last = (struct _##name##node *)name->end_ptr; \
-		_template_create_node_internal(struct _##name##node, _##name##node_temp, val, _##name##node_last); \
-		name->end_ptr = _##name##node_last->next = (struct _##name##node *)_##name##node_temp; \
+		_##type##_list_node_last = (struct _##type##_list_node *)(*list)->end_ptr; \
+		_template_create_node_internal(struct _##type##_list_node, _##type##_list_node_temp, val, _##type##_list_node_last); \
+		(*list)->end_ptr = _##type##_list_node_last->next = (struct _##type##_list_node *)_##type##_list_node_temp; \
 	} \
-	void name##_for_each(void (*callback)(type elem, int index, list_t **list)) \
+	\
+	void type##adt##for_each(type##_list_t **list, void (*callback)(type elem, int index, type##_list_t **list)) \
 	{ \
-        _template_for_each_internal(struct _##name##node, name, callback); \
+        _template_for_each_internal(struct _##type##_list_node, (*list), callback); \
 	} \
-	int name##_length(void) \
+	\
+	type type##adt##head(type##_list_t *list) \
 	{ \
-        _template_length_internal(struct _##name##node, name); \
+        return list->start->d; \
 	} \
-	void name##_remove(type node) \
+	\
+	type type##adt##tail(type##_list_t *list) \
+	{ \
+        return list->end_ptr->d; \
+	} \
+	\
+	int type##adt##length(type##_list_t *list) \
+	{ \
+        _template_length_internal(struct _##type##_list_node, list); \
+	} \
+	\
+	void type##adt##remove(type node) \
 	{ \
 	} \
-	void *name##_remove_last(void) \
+	\
+	void *type##adt##remove_last(type##_list_t **list) \
 	{ \
-        if(name->end_ptr == NULL) return NULL; \
-		struct _##name##node *_##name##node_temp, *_##name##node_last; \
-		_##name##node_temp = (struct _##name##node *)name->end_ptr; \
-		if(_##name##node_temp->prev != NULL) { \
-            name->end_ptr = _##name##node_last = _##name##node_temp->prev; \
-            _##name##node_last->next = NULL; \
+        if((*list)->end_ptr == NULL) return NULL; \
+		struct _##type##_list_node *_##type##_list_node_temp, *_##type##_list_node_last; \
+		_##type##_list_node_temp = (struct _##type##_list_node *)(*list)->end_ptr; \
+		if(_##type##_list_node_temp->prev != NULL) { \
+            (*list)->end_ptr = _##type##_list_node_last = _##type##_list_node_temp->prev; \
+            _##type##_list_node_last->next = NULL; \
 		} \
         else \
-            name->start = name->curr_ptr = name->end_ptr = NULL; \
-		_template_delete_node_internal(_##name##node_temp); \
+            (*list)->start = (*list)->curr_ptr = (*list)->end_ptr = NULL; \
+		_template_delete_node_internal(_##type##_list_node_temp); \
 		return NULL; \
 	} \
-	void name##_remove_all(void) \
+	\
+	void type##adt##remove_all(type##_list_t **list) \
 	{ \
-        _template_remove_all_internal(struct _##name##node, name, end_ptr); \
-        name->start = name->curr_ptr = name->end_ptr = NULL; \
+        _template_remove_all_internal(struct _##type##_list_node, (*list), end_ptr); \
+        (*list)->start = (*list)->curr_ptr = (*list)->end_ptr = NULL; \
 	} \
-    void name##_create_list(list_t **list) { \
-		*list = (list_t *)malloc(sizeof(list_t)); \
-		(*list)->start = (*list)->curr_ptr = (*list)->end_ptr = NULL; \
-		(*list)->insert = &name##_insert; \
-		(*list)->for_each = &name##_for_each; \
-		(*list)->length = &name##_length; \
-		(*list)->remove = &name##_remove; \
-		(*list)->remove_last = &name##_remove_last;	\
-		(*list)->remove_all = &name##_remove_all; \
-	} \
-	name##_create_list(&name);
+	\
+	void type##adt##delete(type##_list_t **list) \
+	{ \
+        type##_list_remove_all(&(*list)); \
+        free(*list); \
+	}
+
+#define _new_list_internal(name, type) \
+    type##_list_t *name = (type##_list_t *)malloc(sizeof(type##_list_t)); \
+    name->start = name->end_ptr = NULL;
 
 #endif // _TEMPLATE_LIST_INTERNAL_INCLUDED_H_

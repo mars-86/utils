@@ -1,155 +1,93 @@
-void foo(list_t **l)
-{
-    (*l)->insert(70);
+typedef char * char_ptr8;
+
+new_stack_type(int);
+new_stack_type(char_ptr8);
+
+new_queue_type(int);
+
+new_list_type(int);
+
+void int_stack_print(int val, int index, int_stack_t **stack) {
+    printf("%d ", val);
 }
 
-long sum(long n1, long n2)
-{
-    return n1 + n2;
+void char_ptr8_stack_print(char *val, int index, int_stack_t **stack) {
+    printf("%s", val);
 }
 
-struct my_int_types {
-    int x;
-    int y;
-    int z;
-} typedef int_types_t;
-
-void custom_printf(int elem, int index, list_t **list)
-{
-    printf("%d: %d\n", index, elem);
+void int_queue_print(int val, int index, int_queue_t **queue) {
+    printf("%d ", val);
 }
 
-void custom_printf_s(int elem, int index, stack_t **list)
-{
-    printf("%d: %d\n", index, elem);
+void int_list_print(int val, int index, int_list_t **list) {
+    printf("%d ", val);
 }
 
-void custom_printf_q(int elem, int index, queue_t **list)
+int main(void)
 {
-    printf("%d: %d\n", index, elem);
-}
+    /* STACK */
+    int_stack_t stck;
+    new_stack(my_stack, int);
+    new_stack(my_stack2, int);
+    int_stack_push(&my_stack, 4);
+    int_stack_push(&my_stack, 10);
+    int_stack_push(&my_stack, 13);
+    int_stack_push(&my_stack, 7);
+    int_stack_for_each(&my_stack, int_stack_print);
+    printf("\n");
+    printf("%d\n", int_stack_length(my_stack));
+    int_stack_push(&my_stack2, 33);
+    int_stack_push(&my_stack2, 4252);
+    int_stack_push(&my_stack2, 67);
+    int_stack_push(&my_stack2, 79);
+    int_stack_for_each(&my_stack2, int_stack_print);
+    printf("\n");
+    printf("%d\n", int_stack_length(my_stack2));
+    int_stack_pop_all(&my_stack);
+    int_stack_for_each(&my_stack, int_stack_print);
+    printf("\n");
+    printf("%d\n", int_stack_length(my_stack));
+    int_stack_delete(&my_stack);
+    int_stack_delete(&my_stack2);
 
-void custom_printf2(long elem, int index, list_t **list)
-{
-    printf("%d: %ld\n", index, elem);
-}
+    int_stack_push((&stck), 79);
+    int_stack_for_each((&stck), int_stack_print);
+    printf("\n");
 
-void custom_printf3(char *elem, int index, list_t **list)
-{
-    printf("%d: %s\n", index, elem);
-}
+    new_stack(charp_stack, char_ptr8);
+    char_ptr8_stack_push((&charp_stack), "Hello ");
+    char_ptr8_stack_push((&charp_stack), "World");
+    char_ptr8_stack_push((&charp_stack), "!\n");
+    char_ptr8_stack_for_each(&charp_stack, char_ptr8_stack_print);
 
-void pow2(int_types_t *elem, int index, list_t **list)
-{
-    elem->x *= elem->x;
-    elem->y *= elem->y;
-    elem->z *= elem->z;
-}
+    char_ptr8_stack_delete(&charp_stack);
 
-void custom_printf4(int_types_t *elem, int index, list_t **list)
-{
-    printf("%d: %d, %d, %d\n", index, elem->x, elem->y, elem->z);
-}
+    /* QUEUE */
+    new_queue(my_queue, int);
+    int_queue_insert(&my_queue, 9);
+    int_queue_insert(&my_queue, 99);
+    int_queue_insert(&my_queue, 999);
+    int_queue_for_each(&my_queue, int_queue_print);
+    printf("\n");
+    int_queue_delete(&my_queue);
 
-int test(void)
-{
-    printf("******** QUEUE *********\n");
-    queue_t *queue;
-    new_queue(queue, int);
-    queue->insert(67);
-    queue->insert(45);
-    queue->insert(83);
-    queue->for_each(custom_printf_q);
-    queue->remove();
-    queue->for_each(custom_printf_q);
-    queue->insert(99);
-    queue->for_each(custom_printf_q);
-    queue->remove();
-    queue->for_each(custom_printf_q);
-    queue->remove_all();
-    queue->for_each(custom_printf_q);
+    /* LIST */
+    new_list(my_list, int);
+    int_list_insert(&my_list, 80);
+    int_list_insert(&my_list, 81);
+    int_list_insert(&my_list, 82);
+    int_list_insert(&my_list, 83);
+    int_list_for_each(&my_list, int_list_print);
+    printf("\n");
+    int_list_remove_last(&my_list);
+    int_list_for_each(&my_list, int_list_print);
+    printf("\n");
+    printf("TAIL: %d\n", int_list_tail(my_list));
+    int_list_remove_last(&my_list);
+    int_list_for_each(&my_list, int_list_print);
+    printf("\n");
+    printf("HEAD: %d\n", int_list_head(my_list));
+    int_list_delete(&my_list);
 
-    delete_queue(&queue);
-
-    printf("******** STACK *********\n");
-    stack_t *stack;
-    new_stack(stack, int);
-    stack->push(33);
-    stack->push(35);
-    stack->push(37);
-    stack->for_each(custom_printf_s);
-    stack->pop();
-    stack->for_each(custom_printf_s);
-    stack->push(39);
-    stack->for_each(custom_printf_s);
-    stack->pop_all();
-    stack->for_each(custom_printf_s);
-    delete_stack(&stack);
-
-    printf("******** LIST *********\n");
-    list_t *list1, *list2, *list3;
-    new_list(list1, int);
-
-    list1->insert(3);
-    list1->insert(5);
-    list1->insert(7);
-    printf("length: %d\n", list1->length());
-    list1->for_each(custom_printf);
-    list1->remove_all();
-    printf("length: %d\n", list1->length());
-    list1->for_each(custom_printf);
-    foo(&list1);
-    list1->for_each(custom_printf);
-    printf("length: %d\n", list1->length());
-    list1->insert(3);
-    list1->insert(5);
-    list1->insert(7);
-    list1->for_each(custom_printf);
-    list1->remove_last();
-    list1->for_each(custom_printf);
-    list1->remove_last();
-    list1->for_each(custom_printf);
-    list1->remove_last();
-    list1->for_each(custom_printf);
-    list1->remove_last();
-    list1->remove_last();
-    list1->insert(15);
-    list1->for_each(custom_printf);
-    list1->remove_last();
-    list1->remove_last();
-    new_list(list2, long);
-
-    list2->insert(sum(3333, 3333));
-    list2->insert(sum(5555, 5555));
-    list2->for_each(custom_printf2);
-    list2->remove_last();
-    list2->remove_last();
-
-    new_list(list3, char *);
-    list3->insert("Hello,");
-    list3->insert("world");
-    printf("length: %d\n", list3->length());
-    list3->insert("!");
-
-    list3->for_each(custom_printf3);
-
-    delete_list(&list1);
-    delete_list(&list2);
-    delete_list(&list3);
-
-    printf("******** LIST CUSTOM TYPE *********\n");
-    list_t *list4;
-    new_list(list4, int_types_t *);
-
-    int_types_t i1 = {1, 2, 3};
-    int_types_t i2 = {4, 5, 6};
-    list4->insert(&i1);
-    list4->insert(&i2);
-    list4->for_each(custom_printf4);
-    list4->for_each(pow2);
-    list4->for_each(custom_printf4);
-    list4->remove_last();
-    list4->remove_last();
-
-    delete_list(&list4);
+	return 0;
 }
