@@ -3,8 +3,8 @@
 #include "os/os.h"
 #include <stdio.h>
 
-int main(void)
-{
+int main(void) {
+/*
     socket_t sock;
     sock.domain = AF_INET;
     sock.type = TCP_SOCKET;
@@ -38,6 +38,6 @@ int main(void)
     } while (bytes_recv > 0);
 
     close_connection(&sock);
-
+*/
     return 0;
 }
