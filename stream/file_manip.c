@@ -3,41 +3,80 @@
 #include "file_manip.h"
 
 struct _FILEBUF {
-    FILE* fd;
-    char* name;
+    FILE *fd;
+    char *name;
     char mode;
     char type;
     size_t size;
 };
 
-int _open_file_base(FILE** fd, const char* path, const char* mode)
+void _file_get_mode(int mode, char *mode_str)
+{
+    switch (mode) {
+    case FILE_MANIP_READ:
+        mode_str[0] = 'r';
+        break;
+    case FILE_MANIP_WRITE:
+        mode_str[0] = 'w';
+        break;
+    case FILE_MANIP_APPEND:
+        mode_str[0] = 'a';
+        break;
+    case FILE_MANIP_READ | FILE_MANIP_PLUS:
+        mode_str[0] = 'r', mode_str[1] = '+';
+        break;
+    case FILE_MANIP_WRITE | FILE_MANIP_PLUS:
+        mode_str[0] = 'w', mode_str[1] = '+';
+        break;
+    case FILE_MANIP_APPEND | FILE_MANIP_PLUS:
+        mode_str[0] = 'a', mode_str[1] = '+';
+        break;
+    case FILE_MANIP_READ | FILE_MANIP_BINARY:
+        mode_str[0] = 'r', mode_str[1] = 'b';
+        break;
+    case FILE_MANIP_WRITE | FILE_MANIP_BINARY:
+        mode_str[0] = 'w', mode_str[1] = 'b';
+        break;
+    case FILE_MANIP_APPEND | FILE_MANIP_BINARY:
+        mode_str[0] = 'a', mode_str[1] = 'b';
+        break;
+    default:
+        mode_str[0] = 'r';
+    }
+}
+
+int _file_open_base(FILE **fd, const char *path, const char *mode)
 {
 #ifdef _WIN32
-    errno_t e;
-    if ((e = fopen_s(&(*fd), path, mode)) != 0)
-        return e;
+    if ((fopen_s(&(*fd), path, mode)) != 0)
+        return 1;
 #else
-    // TODO: return errno_t
     if (!((*fd = fopen(path, mode)))
         return 1;
 #endif // __WIN32
     return 0;
 }
 
-int open_file(FILE** fd, const char* path, const char* mode)
+int file_open(FILE **fd, const char *path, int mode)
 {
-    return _open_file_base(&(*fd), path, "rb");
+    char _mode_s[3];
+    _file_get_mode(mode, _mode_s);
+    return _file_open_base(&(*fd), path, _mode_s);
 }
 
-int open_file_fb(FILEBUF** fb, const char* path, int mode)
+int file_open_fb(FILEBUF **fb, const char *path, int mode)
 {
-    if (!(*fb = (FILEBUF*)malloc(sizeof(FILEBUF)))) {
+    if (!(*fb = (FILEBUF *)malloc(sizeof(FILEBUF)))) {
         perror("malloc");
         return 1;
     }
+    char _mode_s[3];
+    _file_get_mode(mode, _mode_s);
     (*fb)->fd = NULL;
-    if (_open_file_base(&((*fb)->fd), path, "rb") != 0)
+    if (_file_open_base(&((*fb)->fd), path, _mode_s) != 0) {
+        free(*fb);
         return 1;
+    }
     //fb->name = "";
     (*fb)->type = 'b';
     (*fb)->mode = 'r';
@@ -51,17 +90,28 @@ int is_file_open(FILE *fd)
     return fd == NULL ? 0 : 1;
 }
 
-int is_file_open_fb(FILEBUF* fb)
+int is_file_open_fb(FILEBUF *fb)
 {
     return fb->fd == NULL ? 0 : 1;
 }
 
-size_t file_size(FILE* fd)
+size_t file_size_(FILE *fd)
 {
     long fsize;
-    fseek(fd, SEEK_SET, SEEK_END);
+    fseek(fd, 0, SEEK_END);
     fsize = ftell(fd);
-    fseek(fd, SEEK_END, SEEK_SET);
+    fseek(fd, SEEK_END, 0);
+    return fsize;
+}
+
+long file_size(const char *path)
+{
+    FILE *f;
+    long fsize;
+    file_open(&f, path, FILE_MANIP_READ | FILE_MANIP_BINARY);
+    fseek(f, 0, SEEK_END);
+    fsize = ftell(f);
+    file_close(f);
     return fsize;
 }
 
@@ -80,12 +130,12 @@ const char file_type_fb(FILEBUF* fb)
     return fb->type;
 }
 
-void* read_file(char* buff, long buff_size)
+void *file_read(char *buff, long buff_size)
 {
-
+    return NULL;
 }
 
-long long read_binary_file(FILE *fd, unsigned char* fbuff, long buff_size)
+long long file_read_binary(FILE *fd, unsigned char *fbuff, long buff_size)
 {
     int i, c;
     for (i = 0; (c = fgetc(fd)) != EOF && i < buff_size; ++i)
@@ -93,17 +143,40 @@ long long read_binary_file(FILE *fd, unsigned char* fbuff, long buff_size)
     return i; // bytes read
 }
 
-void* find_in_file(const char* search)
+void* file_find(const char* search)
 {
     return NULL;
 }
 
-int close_file(FILE* fd)
+int file_create(const char *path, unsigned char *buff, size_t size)
+{
+    FILE *f;
+    int i;
+    if (file_open(&f, path, FILE_MANIP_WRITE | FILE_MANIP_BINARY) > 0) return 1;
+    for (i = 0; i < size; ++i)
+        fputc(buff[i], f);
+    file_close(f);
+    return 1;
+}
+
+int file_dup(const char *path_dest, const char *path_src)
+{
+    FILE *fs, *fd;
+    int c;
+    if (file_open(&fs, path_src, FILE_MANIP_READ | FILE_MANIP_BINARY) > 0) return 1;
+    if (file_open(&fd, path_dest, FILE_MANIP_WRITE | FILE_MANIP_BINARY) > 0) return 1;
+    while ((c = fgetc(fs))!= EOF) fputc((unsigned char)c, fd);
+    file_close(fd);
+    file_close(fs);
+    return 1;
+}
+
+int file_close(FILE *fd)
 {
     return fclose(fd);
 }
 
-int close_file_fb(FILEBUF* fb)
+int file_close_fb(FILEBUF *fb)
 {
     if (fclose(fb->fd) != 0) {
         free(fb);
