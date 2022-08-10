@@ -4,7 +4,7 @@
 #ifdef __linux__
 #include "x11.h"
 #elif __WIN32
-#define WINVER 0x0500
+// #define WINVER 0x0500
 #include "win32.h"
 #endif // __linux__
 

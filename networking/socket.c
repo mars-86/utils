@@ -1,4 +1,5 @@
 #include "socket.h"
+#include "header.h"
 #include <stdio.h>
 #include "../os/os.h"
 
@@ -14,7 +15,7 @@
 #define _close_socket(socket) close(socket)
 #endif // __WIN32
 
-int open_connection(socket_t *sock)
+int socket_create(socket_type_t type, socket_t *sock)
 {
 #ifdef __WIN32
     WSADATA wsa;
@@ -24,38 +25,102 @@ int open_connection(socket_t *sock)
     }
 #endif // __WIN32
 
-    int sock_s;
-	if ((sock_s = socket(sock->domain, sock->type, sock->protocol)) == 0) {
+    int sd, sdomain, stype, sproto;
+    switch (type) {
+        case TCP_SOCKET:
+            sdomain = AF_INET;
+            stype = TCP_SOCKET;
+            sproto = 0;
+        break;
+        case UDP_SOCKET:
+            sdomain = AF_INET;
+            stype = UDP_SOCKET;
+            sproto = 0;
+        break;
+        default:
+            _handle_err_and_clean("Unsupported socket type");
+            return -1;
+    }
+
+	if ((sd = socket(sdomain, stype, sproto)) == 0) {
         _handle_err_and_clean("create socket failed");
         return -1;
 	}
 
-    if (bind(sock_s, (struct sockaddr *)&sock->sa, sizeof(sock->sa)) < 0) {
+    if (sock != NULL) {
+        sock->descriptor = sd;
+        sock->domain = sdomain;
+        sock->type = stype;
+        sock->protocol = sproto;
+    }
+
+	return sd;
+}
+
+int socket_listen(int socket, unsigned short port, int backlog, socket_t *sock)
+{
+    struct sockaddr_in sa;
+    sa.sin_family = AF_INET;
+    sa.sin_port = htons(port);
+    sa.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    if (bind(socket, (struct sockaddr *)&sa, sizeof(sa)) < 0) {
         _handle_err_and_clean("bind socket");
         return -1;
     }
 
-	if (listen(sock_s, sock->n_conn) < 0) {
+    if (listen(socket, backlog) < 0) {
 		_handle_err_and_clean("listen failed");
         return -1;
 	}
 
-	if ((sock->descriptor = accept(sock_s, NULL, NULL)) == 0) {
-        _handle_err_and_clean("accept failed");
-        return -1;
-	}
-    _close_socket(sock_s);
+    if (sock != NULL) {
+        sock->sa = sa;
+        sock->backlog = backlog;
+    }
 
 	return 0;
 }
 
-int close_connection(socket_t *sock)
+int socket_accept(int socket, struct sockaddr *addr)
 {
-    int ret;
-	if ((ret = closesocket(sock->descriptor)) < 0)
-        _handle_err("close socket failed");
-#ifdef __WIN32
-    WSACleanup();
-#endif // __WIN32
-    return ret;
+    struct sockaddr_in sa;
+    int addr_len = sizeof(sa);
+    int *addr_len_p = &addr_len;
+
+    int newsd;
+	if ((newsd = accept(socket, (struct sockaddr *)&sa, addr_len_p)) < 0) {
+        _handle_err_and_clean("accept failed");
+        return -1;
+	}
+
+    if (addr)
+        sprintf(addr->sa_data, "%s", inet_ntoa(sa.sin_addr));
+
+    return newsd;
+}
+
+int socket_poll(int listen_sock, poll_config_t *poll)
+{
+    WSAPOLLFD fds[poll->nfds];
+    struct sockaddr addr;
+    int events = 0, n = 1, i;
+    fds[0].fd = listen_sock;
+    fds[0].events = POLLIN;
+
+    do {
+        events = WSAPoll(fds, n, poll->timeout);
+        if (events) {
+            if (fds[0].revents) {
+                fds[n].fd = socket_accept(fds[0].fd, &addr);
+                fds[n].events = poll->events, ++n;
+            } else {
+                for (i = 1; i < n; ++i)
+                    if (fds[i].revents)
+                        poll->handler(fds[i].fd, &addr), --n;
+            }
+        } else {
+            printf("No events\n");
+        }
+    } while(1);
 }

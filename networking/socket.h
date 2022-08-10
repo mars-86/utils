@@ -10,24 +10,34 @@
 #include <sys/socket.h>
 #endif // __WIN32
 
-enum {
+typedef enum socket_type {
 	TCP_SOCKET = SOCK_STREAM,
 	UDP_SOCKET = SOCK_DGRAM,
 	RAW_SOCKET = SOCK_RAW
-} typedef socket_type_t;
+} socket_type_t;
 
-struct {
+typedef struct socket {
 	char name[32];
 	int descriptor;
 	int domain;
 	socket_type_t type;
 	int protocol;
-	int n_conn;
+	int backlog;
 	struct sockaddr_in sa;
-} typedef socket_t;
+} socket_t;
+
+typedef struct poll_config {
+	int nfds;
+	int timeout;
+	void (*handler)(int socket, struct sockaddr *addr);
+	int events;
+	struct sockaddr_in sa;
+} poll_config_t;
 
 void perror_m(const char *msg);
-int open_connection(socket_t *socket);
-int close_connection(socket_t *socket);
+int socket_create(socket_type_t type, socket_t *sock);
+int socket_listen(int socket, unsigned short port, int backlog, socket_t *sock);
+int socket_accept(int socket, struct sockaddr *addr);
+int socket_poll(int listen_sock, poll_config_t *poll);
 
 #endif // _NETWORKING_SOCKET_INCLUDED_H_
