@@ -2,6 +2,7 @@
 #include "networking/header.h"
 #include "networking/connection.h"
 #include "os/os.h"
+#include "stream/logger.h"
 #include <stdio.h>
 
 void handle_incomming_data(int sock, struct sockaddr *addr)
@@ -35,7 +36,7 @@ int main(void) {
         return -1;
     }
 
-    printf("Listening for connections..\n");
+    log_info("Listening for connections..\n");
 
     poll_config_t poll_conf;
 
