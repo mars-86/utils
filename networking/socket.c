@@ -7,9 +7,10 @@
 #include <winsock2.h>
 #define _handle_err(msg) perror_win(msg)
 #define _handle_err_and_clean(msg) _handle_err(msg), WSACleanup()
-#define _close_socket(socket) closesocket(socket)
+#define _close_socket(socket) closesocket(socket), WSACleanup()
 #else
 #include <sys/socket.h>
+#include <poll.h>
 #define _handle_err(msg) perror(msg)
 #define _handle_err_and_clean(msg) _handle_err(msg)
 #define _close_socket(socket) close(socket)
@@ -74,10 +75,7 @@ int socket_listen(int socket, unsigned short port, int backlog, socket_t *sock)
         return -1;
 	}
 
-    if (sock != NULL) {
-        sock->sa = sa;
-        sock->backlog = backlog;
-    }
+    if (sock != NULL) sock->sa = sa;
 
 	return 0;
 }
@@ -94,22 +92,32 @@ int socket_accept(int socket, struct sockaddr *addr)
         return -1;
 	}
 
-    if (addr)
-        sprintf(addr->sa_data, "%s", inet_ntoa(sa.sin_addr));
+    if (addr) sprintf(addr->sa_data, "%s", inet_ntoa(sa.sin_addr));
 
     return newsd;
 }
 
-int socket_poll(int listen_sock, poll_config_t *poll)
+void socket_close(int socket)
 {
+    _close_socket(socket);
+}
+
+int socket_poll(int listen_sock, const poll_config_t *poll)
+{
+#ifdef __WIN32
     WSAPOLLFD fds[poll->nfds];
+    int(*evpoll)(WSAPOLLFD *, unsigned long, int) = WSAPoll;    
+#else
+    struct pollfd fds[poll->nfds];
+    int(*evpoll)(pollfd *, nfds_t, int) = poll;
+#endif
     struct sockaddr addr;
     int events = 0, n = 1, i;
     fds[0].fd = listen_sock;
     fds[0].events = POLLIN;
 
     do {
-        events = WSAPoll(fds, n, poll->timeout);
+        events = evpoll(fds, n, poll->timeout);
         if (events) {
             if (fds[0].revents) {
                 fds[n].fd = socket_accept(fds[0].fd, &addr);
@@ -120,7 +128,7 @@ int socket_poll(int listen_sock, poll_config_t *poll)
                         poll->handler(fds[i].fd, &addr), --n;
             }
         } else {
-            printf("No events\n");
+            //
         }
     } while(1);
 }

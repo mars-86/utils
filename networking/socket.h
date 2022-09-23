@@ -22,7 +22,6 @@ typedef struct socket {
 	int domain;
 	socket_type_t type;
 	int protocol;
-	int backlog;
 	struct sockaddr_in sa;
 } socket_t;
 
@@ -38,6 +37,7 @@ void perror_m(const char *msg);
 int socket_create(socket_type_t type, socket_t *sock);
 int socket_listen(int socket, unsigned short port, int backlog, socket_t *sock);
 int socket_accept(int socket, struct sockaddr *addr);
-int socket_poll(int listen_sock, poll_config_t *poll);
+void socket_close(int socket);
+int socket_poll(int listen_sock, const poll_config_t *poll);
 
 #endif // _NETWORKING_SOCKET_INCLUDED_H_
