@@ -31,7 +31,7 @@ void handle_incomming_data(int sock, struct sockaddr *addr)
 int main(void) {
     int sd, accept_sd;
 
-    if ((sd = connection_open(NULL)) < 0) {
+    if ((sd = connection_open(NULL, 3000, 10)) < 0) {
         fprintf(stderr, "Error on creating a connection");
         return -1;
     }
