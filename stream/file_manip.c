@@ -57,6 +57,12 @@ int _file_open_base(FILE **fd, const char *path, const char *mode)
     return 0;
 }
 
+FILE *file_read(const char *path)
+{
+    FILE *fd;
+    return _file_open_base(&(*fd), path, "r");
+}
+
 int file_open(FILE **fd, const char *path, int mode)
 {
     char _mode_s[3];
@@ -130,12 +136,12 @@ const char file_type_fb(FILEBUF* fb)
     return fb->type;
 }
 
-void *file_read(char *buff, long buff_size)
+void *file_read_(char *buff, long buff_size)
 {
     return NULL;
 }
 
-long long file_read_binary(FILE *fd, unsigned char *fbuff, long buff_size)
+size_t file_read_binary_(FILE *fd, unsigned char *fbuff, long buff_size)
 {
     int i, c;
     for (i = 0; (c = fgetc(fd)) != EOF && i < buff_size; ++i)
@@ -159,13 +165,13 @@ int file_create(const char *path, unsigned char *buff, size_t size)
     return 1;
 }
 
-int file_dup(const char *path_dest, const char *path_src)
+int file_dup(const char *__restrict__ path_dest, const char *__restrict__ path_src)
 {
     FILE *fs, *fd;
     int c;
     if (file_open(&fs, path_src, FILE_MANIP_READ | FILE_MANIP_BINARY) > 0) return 1;
     if (file_open(&fd, path_dest, FILE_MANIP_WRITE | FILE_MANIP_BINARY) > 0) return 1;
-    while ((c = fgetc(fs))!= EOF) fputc((unsigned char)c, fd);
+    while ((c = fgetc(fs)) != EOF) fputc((unsigned char)c, fd);
     file_close(fd);
     file_close(fs);
     return 1;
