@@ -2,7 +2,7 @@
 #define _STREAM_FILE_MANIP_INCLUDED_H_
 
 #include <stdio.h>
-
+#include <string.h>
 typedef struct _FILEBUF FILEBUF;
 typedef struct FILEBUF** FILEBUFL;
 
@@ -14,12 +14,13 @@ enum _FILE_MANIP_MODES {
 	FILE_MANIP_BINARY = 0x10
 };
 
-FILE *file_read(const char *path);
+int file_read(const char *__restrict__ path, char *__restrict__ buff, size_t size);
+int file_write(const char *__restrict__ path, const char *__restrict__ content);
 int file_open(FILE** fd, const char* path, int mode);
 int file_open_fb(FILEBUF** fb, const char* path, int mode);
 int is_file_open(FILE* fd);
 int is_file_open_fb(FILEBUF* fb);
-long file_size(const char *path);
+size_t file_size(const char *path);
 size_t file_size_fb(FILEBUF* fb);
 const char file_mode_fb(FILEBUF* fb);
 const char file_type_fb(FILEBUF* fb);
