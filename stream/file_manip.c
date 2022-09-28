@@ -45,7 +45,7 @@ void _file_get_mode(int mode, char *mode_str)
     }
 }
 
-int _file_open_base(FILE **__restrict__ fd, const char *__restrict__ path, const char *__restrict__ mode)
+int _file_open_base(FILE **fd, const char *__restrict__ path, const char *__restrict__ mode)
 {
 /*
 #ifdef _WIN32
@@ -56,7 +56,7 @@ int _file_open_base(FILE **__restrict__ fd, const char *__restrict__ path, const
         return 1;
 #endif // __WIN32
 */
-    if (!(*fd = fopen(path, mode)));
+    if (!(*fd = fopen(path, mode)))
         return 1;
     return 0;
 }
@@ -64,7 +64,7 @@ int _file_open_base(FILE **__restrict__ fd, const char *__restrict__ path, const
 int file_read(const char *__restrict__ path, char *__restrict__ buff, size_t size)
 {
     FILE *fd;
-    if (_file_open_base(&(*fd), path, "r") > 0)
+    if (_file_open_base(&fd, path, "r") > 0)
         return 1;
 
     char c; int s;
@@ -78,7 +78,7 @@ int file_read(const char *__restrict__ path, char *__restrict__ buff, size_t siz
 int file_write(const char *__restrict__ path, const char *__restrict__ content)
 {
     FILE *fd;
-    if (_file_open_base(&(*fd), path, "w") > 0)
+    if (_file_open_base(&fd, path, "w") > 0)
         return 1;
 
     while(*content != '\0')
@@ -90,44 +90,22 @@ int file_write(const char *__restrict__ path, const char *__restrict__ content)
 int file_read_f(const char *__restrict__ path, char *__restrict__ buff, size_t size, const char *__restrict__ encoding)
 {
     FILE *fd;
-    _file_open_base(&(*fd), path, "r");
-    return fd;
+    _file_open_base(&fd, path, "r");
+    return 0;
 }
 
 int file_write_f(const char *__restrict__ path, const char *__restrict__ content, const char *__restrict__ encoding)
 {
     FILE *fd;
-    _file_open_base(&(*fd), path, "r");
-    return fd;
+    _file_open_base(&fd, path, "r");
+    return 0;
 }
-
 
 int file_open(FILE **fd, const char *path, int mode)
 {
     char _mode_s[3];
     _file_get_mode(mode, _mode_s);
     return _file_open_base(&(*fd), path, _mode_s);
-}
-
-int file_open_fb(FILEBUF **fb, const char *path, int mode)
-{
-    if (!(*fb = (FILEBUF *)malloc(sizeof(FILEBUF)))) {
-        perror("malloc");
-        return 1;
-    }
-    char _mode_s[3];
-    _file_get_mode(mode, _mode_s);
-    (*fb)->fd = NULL;
-    if (_file_open_base(&((*fb)->fd), path, _mode_s) != 0) {
-        free(*fb);
-        return 1;
-    }
-    //fb->name = "";
-    (*fb)->type = 'b';
-    (*fb)->mode = 'r';
-    (*fb)->size = file_size((*fb)->fd);
-
-    return 0;
 }
 
 int is_file_open(FILE *fd)
@@ -140,7 +118,7 @@ int is_file_open_fb(FILEBUF *fb)
     return fb->fd == NULL ? 0 : 1;
 }
 
-size_t file_size_(FILE *fd)
+size_t file_size_d(FILE *fd)
 {
     long fsize;
     fseek(fd, 0, SEEK_END);
@@ -163,6 +141,27 @@ size_t file_size(const char *path)
 size_t file_size_fb(FILEBUF* fb)
 {
     return fb->size;
+}
+
+int file_open_fb(FILEBUF **fb, const char *path, int mode)
+{
+    if (!(*fb = (FILEBUF *)malloc(sizeof(FILEBUF)))) {
+        perror("malloc");
+        return 1;
+    }
+    char _mode_s[3];
+    _file_get_mode(mode, _mode_s);
+    (*fb)->fd = NULL;
+    if (_file_open_base(&((*fb)->fd), path, _mode_s) != 0) {
+        free(*fb);
+        return 1;
+    }
+    //fb->name = "";
+    (*fb)->type = 'b';
+    (*fb)->mode = 'r';
+    (*fb)->size = file_size_d((*fb)->fd);
+
+    return 0;
 }
 
 const char file_mode_fb(FILEBUF* fb)
