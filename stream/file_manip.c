@@ -45,15 +45,59 @@ void _file_get_mode(int mode, char *mode_str)
     }
 }
 
-int _file_open_base(FILE **fd, const char *path, const char *mode)
+int _file_open_base(FILE **fd, const char *__restrict__ path, const char *__restrict__ mode)
 {
+/*
 #ifdef _WIN32
     if ((fopen_s(&(*fd), path, mode)) != 0)
         return 1;
 #else
-    if (!((*fd = fopen(path, mode)))
+    if (!(*fd = fopen(path, mode)))
         return 1;
 #endif // __WIN32
+*/
+    if (!(*fd = fopen(path, mode)))
+        return 1;
+    return 0;
+}
+
+int file_read(const char *__restrict__ path, char *__restrict__ buff, size_t size)
+{
+    FILE *fd;
+    if (_file_open_base(&fd, path, "r") > 0)
+        return 1;
+
+    char c; int s;
+    for(s = 0; (c = fgetc(fd)) != EOF && s < size; ++s, ++buff)
+        *buff = c;
+    file_close(fd);
+
+    return 0;
+}
+
+int file_write(const char *__restrict__ path, const char *__restrict__ content)
+{
+    FILE *fd;
+    if (_file_open_base(&fd, path, "w") > 0)
+        return 1;
+
+    while(*content != '\0')
+        fputc(*content++, fd);
+    file_close(fd);
+    return 0;
+}
+
+int file_read_f(const char *__restrict__ path, char *__restrict__ buff, size_t size, const char *__restrict__ encoding)
+{
+    FILE *fd;
+    _file_open_base(&fd, path, "r");
+    return 0;
+}
+
+int file_write_f(const char *__restrict__ path, const char *__restrict__ content, const char *__restrict__ encoding)
+{
+    FILE *fd;
+    _file_open_base(&fd, path, "r");
     return 0;
 }
 
@@ -62,6 +106,41 @@ int file_open(FILE **fd, const char *path, int mode)
     char _mode_s[3];
     _file_get_mode(mode, _mode_s);
     return _file_open_base(&(*fd), path, _mode_s);
+}
+
+int is_file_open(FILE *fd)
+{
+    return fd == NULL ? 0 : 1;
+}
+
+int is_file_open_fb(FILEBUF *fb)
+{
+    return fb->fd == NULL ? 0 : 1;
+}
+
+size_t file_size_d(FILE *fd)
+{
+    long fsize;
+    fseek(fd, 0, SEEK_END);
+    fsize = ftell(fd);
+    fseek(fd, SEEK_END, 0);
+    return fsize;
+}
+
+size_t file_size(const char *path)
+{
+    FILE *f;
+    long fsize;
+    file_open(&f, path, FILE_MANIP_READ | FILE_MANIP_BINARY);
+    fseek(f, 0, SEEK_END);
+    fsize = ftell(f);
+    file_close(f);
+    return fsize;
+}
+
+size_t file_size_fb(FILEBUF* fb)
+{
+    return fb->size;
 }
 
 int file_open_fb(FILEBUF **fb, const char *path, int mode)
@@ -80,44 +159,9 @@ int file_open_fb(FILEBUF **fb, const char *path, int mode)
     //fb->name = "";
     (*fb)->type = 'b';
     (*fb)->mode = 'r';
-    (*fb)->size = file_size((*fb)->fd);
+    (*fb)->size = file_size_d((*fb)->fd);
 
     return 0;
-}
-
-int is_file_open(FILE *fd)
-{
-    return fd == NULL ? 0 : 1;
-}
-
-int is_file_open_fb(FILEBUF *fb)
-{
-    return fb->fd == NULL ? 0 : 1;
-}
-
-size_t file_size_(FILE *fd)
-{
-    long fsize;
-    fseek(fd, 0, SEEK_END);
-    fsize = ftell(fd);
-    fseek(fd, SEEK_END, 0);
-    return fsize;
-}
-
-long file_size(const char *path)
-{
-    FILE *f;
-    long fsize;
-    file_open(&f, path, FILE_MANIP_READ | FILE_MANIP_BINARY);
-    fseek(f, 0, SEEK_END);
-    fsize = ftell(f);
-    file_close(f);
-    return fsize;
-}
-
-size_t file_size_fb(FILEBUF* fb)
-{
-    return fb->size;
 }
 
 const char file_mode_fb(FILEBUF* fb)
@@ -130,12 +174,7 @@ const char file_type_fb(FILEBUF* fb)
     return fb->type;
 }
 
-void *file_read(char *buff, long buff_size)
-{
-    return NULL;
-}
-
-long long file_read_binary(FILE *fd, unsigned char *fbuff, long buff_size)
+size_t file_read_binary_(FILE *fd, unsigned char *fbuff, long buff_size)
 {
     int i, c;
     for (i = 0; (c = fgetc(fd)) != EOF && i < buff_size; ++i)
@@ -159,13 +198,13 @@ int file_create(const char *path, unsigned char *buff, size_t size)
     return 1;
 }
 
-int file_dup(const char *path_dest, const char *path_src)
+int file_dup(const char *__restrict__ path_dest, const char *__restrict__ path_src)
 {
     FILE *fs, *fd;
     int c;
     if (file_open(&fs, path_src, FILE_MANIP_READ | FILE_MANIP_BINARY) > 0) return 1;
     if (file_open(&fd, path_dest, FILE_MANIP_WRITE | FILE_MANIP_BINARY) > 0) return 1;
-    while ((c = fgetc(fs))!= EOF) fputc((unsigned char)c, fd);
+    while ((c = fgetc(fs)) != EOF) fputc((unsigned char)c, fd);
     file_close(fd);
     file_close(fs);
     return 1;
